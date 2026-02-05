@@ -23,11 +23,11 @@ Defaults: ~85 tickers across sectors (tech, finance, consumer, healthcare, indus
 
 ### Data sources
 
-| Source         | Default? | API key? |
-|----------------|-----------|----------|
-| **yfinance**   | Yes       | No       |
-| Alpha Vantage  | No        | Yes (`ALPHAVANTAGE_API_KEY`) |
-| Polygon        | No        | Yes (`POLYGON_API_KEY`)      |
+| Source         | Default? | API key? | Notes |
+|----------------|----------|----------|-------|
+| **yfinance**   | Yes      | No       | Full history where available. |
+| Alpha Vantage  | No       | Yes (`ALPHAVANTAGE_API_KEY`) | **Free tier uses `outputsize=compact` (~100 recent trading days only) and has strict rate limits.** |
+| Polygon        | No       | Yes (`POLYGON_API_KEY`)      | Full history within your Polygon plan limits. |
 
 By default, downloads use **yfinance**. To use another source, use the copy-paste commands below.
 
@@ -50,10 +50,14 @@ cd ~/data_collection
 python download_stock_data.py --source yfinance --tickers AAPL MSFT GOOGL --output-dir data
 ```
 
-**2. Alpha Vantage (requires API key)**
+**2. Alpha Vantage (requires API key, recent window only on free tier)**
 
 Set your key first (PowerShell): `$env:ALPHAVANTAGE_API_KEY = "YOUR_KEY"`  
-Or get a free key at: https://www.alphavantage.co/support/#api-key
+Or get a free key at: https://www.alphavantage.co/support/#api-key  
+
+**Important limitations for this lab setup:**
+- The code uses `outputsize=compact` so it works on the free tier → you only get the last ~100 trading days of daily data.  
+- Alpha Vantage free keys have strict rate limits (roughly 1 request/second and low daily caps). If you hit the limit, you'll see “Thank you for using Alpha Vantage…” messages and no CSVs will be written until the limit resets.
 
 ```bash
 cd ~/data_collection

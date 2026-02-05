@@ -1,6 +1,7 @@
 # Load stock CSV or fetch from yfinance / Alpha Vantage / Polygon. Expects Date, OHLCV.
 
 import os
+import time
 import pandas as pd
 from typing import Dict, List, Optional, Any
 
@@ -132,7 +133,11 @@ def fetch_alphavantage(
     end: Optional[str] = None,
     api_key: Optional[str] = None,
 ) -> Dict[str, pd.DataFrame]:
-    """Alpha Vantage daily. Need ALPHAVANTAGE_API_KEY."""
+    """Alpha Vantage daily. Need ALPHAVANTAGE_API_KEY.
+
+    Note: uses outputsize=compact so it works on the free tier
+    (last ~100 trading days), instead of the premium-only outputsize=full.
+    """
     api_key = api_key or os.environ.get("ALPHAVANTAGE_API_KEY")
     if not api_key:
         print("Alpha Vantage requires an API key. Set ALPHAVANTAGE_API_KEY or pass api_key=.")
@@ -145,39 +150,74 @@ def fetch_alphavantage(
     if end is None:
         end = pd.Timestamp.today().strftime("%Y-%m-%d")
     data = {}
+
+    # Alpha Vantage free tier: 5 calls per minute.
+    # Implement simple rate‑limit aware retries per ticker.
     for t in tickers:
-        try:
-            url = (
-                "https://www.alphavantage.co/query"
-                "?function=TIME_SERIES_DAILY"
-                f"&symbol={t}&outputsize=full&apikey={api_key}"
-            )
-            r = requests.get(url, timeout=30)
-            r.raise_for_status()
-            j = r.json()
-            ts = j.get("Time Series (Daily)") or j.get("time_series_daily")
-            if not ts:
-                continue
-            rows = []
-            for date_str, v in ts.items():
-                if date_str < start or date_str > end:
-                    continue
-                rows.append({
-                    "Date": date_str,
-                    "Open": float(v.get("1. open", v.get("open", 0))),
-                    "High": float(v.get("2. high", v.get("high", 0))),
-                    "Low": float(v.get("3. low", v.get("low", 0))),
-                    "Close": float(v.get("4. close", v.get("close", 0))),
-                    "Volume": int(float(v.get("5. volume", v.get("volume", 0)))),
-                })
-            if not rows:
-                continue
-            df = pd.DataFrame(rows)
-            df = df.sort_values("Date").reset_index(drop=True)
-            data[t] = _normalize_ohlcv_df(df)
-        except Exception as e:
-            print(f"  Alpha Vantage {t}: {e}")
-            continue
+        attempts = 0
+        while attempts < 3:
+            attempts += 1
+            try:
+                url = (
+                    "https://www.alphavantage.co/query"
+                    "?function=TIME_SERIES_DAILY"
+                    f"&symbol={t}&outputsize=compact&apikey={api_key}"
+                )
+                r = requests.get(url, timeout=30)
+                r.raise_for_status()
+                j = r.json()
+
+                msg = j.get("Note") or j.get("Information") or j.get("Error Message")
+                if msg:
+                    print(f"  Alpha Vantage {t} message: {msg}")
+
+                    # If clearly rate‑limited, wait and retry.
+                    if "frequency" in msg.lower() or "limit" in msg.lower():
+                        if attempts < 3:
+                            time.sleep(15)
+                            continue
+                        else:
+                            break
+
+                    # If API key is invalid or similar hard error, don't retry.
+                    if "invalid" in msg.lower() or "apikey" in msg.lower():
+                        break
+
+                ts = (
+                    j.get("Time Series (Daily)")
+                    or j.get("Time Series (Daily) Adjusted")
+                    or j.get("time_series_daily")
+                )
+                if not ts:
+                    if not msg:
+                        print(f"  Alpha Vantage {t}: no 'Time Series (Daily)' data returned.")
+                    break
+
+                rows = []
+                for date_str, v in ts.items():
+                    if date_str < start or date_str > end:
+                        continue
+                    rows.append({
+                        "Date": date_str,
+                        "Open": float(v.get("1. open", v.get("open", 0))),
+                        "High": float(v.get("2. high", v.get("high", 0))),
+                        "Low": float(v.get("3. low", v.get("low", 0))),
+                        "Close": float(v.get("4. close", v.get("close", 0))),
+                        "Volume": int(float(v.get("5. volume", v.get("volume", 0)))),
+                    })
+                if not rows:
+                    print(f"  Alpha Vantage {t}: no rows in requested date range {start} to {end}.")
+                    break
+
+                df = pd.DataFrame(rows)
+                df = df.sort_values("Date").reset_index(drop=True)
+                data[t] = _normalize_ohlcv_df(df)
+                # Respect rate limit between successful calls as well.
+                time.sleep(15)
+                break
+            except Exception as e:
+                print(f"  Alpha Vantage {t}: {e}")
+                break
     return data
 
 

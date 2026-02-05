@@ -72,7 +72,11 @@ if __name__ == "__main__":
         "--source",
         choices=["yfinance", "alphavantage", "polygon"],
         default="yfinance",
-        help="Data source: yfinance (no key), alphavantage (ALPHAVANTAGE_API_KEY), polygon (POLYGON_API_KEY)",
+        help=(
+            "Data source: yfinance (no key, full history where available), "
+            "alphavantage (ALPHAVANTAGE_API_KEY, free tier: recent ~100 trading days only, "
+            "strict rate limits), polygon (POLYGON_API_KEY)"
+        ),
     )
     parser.add_argument("--start", default="2020-01-01", help="Start date (YYYY-MM-DD)")
     parser.add_argument("--end", default=None, help="End date (default: today)")
