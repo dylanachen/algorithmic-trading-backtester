@@ -147,3 +147,8 @@ python download_stock_data.py --source yfinance --output-dir data
 
 ### ARIMA
 <img width="2400" height="840" alt="Image" src="https://github.com/user-attachments/assets/e2527bd6-a933-4af2-9c0d-ceac1e480057" />
+
+
+# Conclusion
+In conclusion, this experiment highlights how difficult it is to generate reliable profit by predicting stock prices using only past OHLCV values. Stock movements contain substantial uncertainty driven by factors that are not captured in the time series itself, so even reasonable forecasting models can fail in a short evaluation window. Although ARIMA performed better than the MA baseline for most of the holdout period, both approaches eventually flipped into losses by the final day of the 20-trading-day simulation, showing that short-term gains were not stable and could be erased by late drawdowns.
+
