@@ -1,6 +1,15 @@
 # DSCI-560: Data Science Practicum Laboratory Assignment 4
 A systematic backtesting engine for algorithmic trading strategies, combining technical indicators, time-series models, and portfolio simulations to evaluate risk-adjusted returns.
 
+## Project Overview
+
+This project builds a multi-asset backtesting pipeline using daily OHLCV data downloaded with `yfinance` (one CSV per ticker). All tickers are aligned by the intersection of common trading dates to ensure decisions are made on the same days.
+
+We evaluate on a 20-trading-day holdout period. These last 20 days are excluded from model fitting, so the training history never overlaps with the test window. On each holdout day `t`, we fit a separate forecasting model per ticker using data only up to `t-1` (no look-ahead) and predict future **Open** prices. We support MA and ARIMA baselines; with horizon 1, we predict only the next-day Open.
+
+Tickers are scored by predicted return and the top `N` are selected at each rebalance. Trades execute at the **Open** price, with rebalancing every `K` days and a minimum holding constraint to reduce turnover. The system outputs transaction logs, performance metrics (including Sharpe ratio), and plots of portfolio value and rolling Sharpe.
+
+
 ## Team: pylovers
 
 | Name | USC ID |
