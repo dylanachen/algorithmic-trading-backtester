@@ -1,5 +1,14 @@
-# algorithmic-trading-backtester
+# DSCI-560: Data Science Practicum Laboratory Assignment 4
 A systematic backtesting engine for algorithmic trading strategies, combining technical indicators, time-series models, and portfolio simulations to evaluate risk-adjusted returns.
+
+## Team: pylovers
+
+| Name | USC ID |
+|------|--------|
+| Dylan Chen | 6984540266 |
+| Angela Kang | 8957777203 |
+| Vincent-Daniel Yun | 4463771151 |
+
 
 ## Setup
 
