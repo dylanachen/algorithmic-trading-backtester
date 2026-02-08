@@ -105,6 +105,40 @@ python download_stock_data.py --source yfinance --output-dir data
       --out_dir out_lab4_topN
 
 
+# Final Results
+### MA
+
+    === Strategy ===
+    Price alignment    : predict NEXT OPEN, trade at OPEN
+    Method             : ma
+    
+    === Portfolio Metrics (holdout trading) ===
+    Initial value     : $1,007,117.73
+    Final value       : $888,299.76
+    Total return      : -11.798%
+    Annualized return : -79.439%
+    Sharpe ratio      : -7.3250
+    Max drawdown      : -12.175%
+    Trading days      : 20
+    
+
+
+### ARIMA
+
+    === Strategy ===
+    Price alignment    : predict NEXT OPEN, trade at OPEN
+    Method             : arima
+    
+    === Portfolio Metrics (holdout trading) ===
+    Initial value     : $1,000,011.44
+    Final value       : $991,151.83
+    Total return      : -0.886%
+    Annualized return : -10.607%
+    Sharpe ratio      : -0.4516
+    Max drawdown      : -5.408%
+    Trading days      : 20
+
+
 
 # Plots
 ### MA
