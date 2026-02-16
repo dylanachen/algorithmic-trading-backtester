@@ -1,4 +1,4 @@
-# DSCI-560: Data Science Practicum Laboratory Assignment 4
+# Algorithmic Trading Backtester
 ## Project Overview
 
 This project builds a multi-asset backtesting pipeline using daily OHLCV data downloaded with `yfinance` (one CSV per ticker). All tickers are aligned by the intersection of common trading dates to ensure decisions are made on the same days.
